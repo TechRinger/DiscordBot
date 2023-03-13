@@ -1,6 +1,13 @@
+import os
 import discord
+from discord.ext import commands
 import responses
+from dotenv import load_dotenv
 
+
+load_dotenv()
+TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
+GUILD = os.getenv ('DISCORD_GUILD')
 
 async def send_message(message, user_message, is_private):
     try:
@@ -12,7 +19,6 @@ async def send_message(message, user_message, is_private):
 
 
 def run_discord_bot():
-    TOKEN = 'MTAzMTgyODc5OTcyMzE1OTU1Mw.GuDYw4.NgEcEiljxvIUcDlr3WmD0X7TV5TByT_ob769QM'
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
@@ -25,17 +31,21 @@ def run_discord_bot():
     async def on_message(message):
         if message.author == client.user:
             return
-
-        username = str(message.author)
-        user_message = str(message.content)
-        channel = str(message.channel)
-
-        print(f'{username} said: "{user_message}" ({channel})')
-
-        if user_message[0] == '?':
-            user_message = user_message[1:]
-            await send_message(message, user_message, is_private=True)
+        elif str(message.channel.type) != 'private' and str(message.channel) != 'vul-lab':
+            return
         else:
-            await send_message(message, user_message, is_private=False)
+
+            username = str(message.author)
+            user_message = str(message.content)
+            channel = str(message.channel)
+
+            print(f'{username} said: "{user_message}" ({channel})')
+
+            if user_message[0] == '?':
+                user_message = user_message[1:]
+                await send_message(message, user_message, is_private=True)
+            else:
+                await send_message(message, user_message, is_private=False)
+        
 
     client.run(TOKEN)

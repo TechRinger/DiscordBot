@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "discord-bot"
+version = "0.1.0"
+description = "Discord Bot"
+authors = ["TechRinger <rob@techringer.net>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "discord_bot"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.28.2"
+discord = "^2.2.2"
+python-dotenv = "^1.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

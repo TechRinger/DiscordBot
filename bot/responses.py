@@ -1,6 +1,5 @@
 import random
 
-
 def get_response(message: str) -> str:
     p_message = message.lower()
 
@@ -12,5 +11,7 @@ def get_response(message: str) -> str:
 
     if p_message == '!help':
         return '`This is a help message that you can modify.`'
+    if p_message == '!menu': 
+        return 'This is a menu.'
 
     return 'I didn\'t understand what you wrote. Try typing "!help".'
