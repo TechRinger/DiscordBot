@@ -4,7 +4,7 @@ from discord.ext import commands
 from discord.ui import View, Modal, TextInput
 from dotenv import load_dotenv
 import requests
-import json
+from time import sleep
 
 
 load_dotenv()
@@ -13,29 +13,51 @@ GUILD = os.getenv ('DISCORD_GUILD')
 XSOAR_URL = os.getenv('XSOAR_URL')
 XSOAR_TOKEN = os.getenv('XSOAR_BOT_TOKEN')
 
+XSOAR_HEADERS = {'content-type': 'application/json',
+            'accept': 'application/json',
+            'Authorization': XSOAR_TOKEN}
+
 def xsoar_create_incident(email: str) -> str:
-    body = {'CustomFields': {'emailsender': f'{email}'},
+    body = {'CustomFields': {'emailsender': f'{email}', 'emailsubject': f'Vulnerability Lab for {email}'},
             'name': f'Discord Bot Incident for {email}',
-            'playbookId': '9969b7b3-ed19-4d7f-8de2-a165b153f557',
+            'playbookId': '09481d3c-79c8-4ff3-8df3-982a17e5600d',
             'type': 'Vulnerability Lab Setup',
             'severity': 1,
             'createInvestigation': True
             }
-    headers = {'content-type': 'application/json',
-               'accept': 'application/json',
-               'Authorization': XSOAR_TOKEN}
 
-    r = requests.post(url=f'{XSOAR_URL}/incident', headers=headers, json=body, verify=False)
-    # TODO - sleep and query incident ID for fields
+    # TODO - query to see if there's already an INC first
+    r = requests.post(url=f'{XSOAR_URL}/incident', headers=XSOAR_HEADERS, json=body, verify=False)
     return r.json()['id']
+    
+
+def xsoar_query_inc(inc_id):
+    return_data = {'id': inc_id}
+
+    inc_query = requests.post(url=f'{XSOAR_URL}/investigation/{inc_id}', headers=XSOAR_HEADERS, verify=False)
+    j_data = inc_query.json()
+    if 'httpsserverport' in j_data.keys():
+        return_data['HTTPS Server Port'] = j_data['httpsserverport']
+    if 'randomhostname' in inc_query.json().keys():
+        return_data['Random Hostname'] = j_data['randomhostname']
+    if 'ssltunnelserverport' in inc_query.json().keys():
+        return_data['SSL Tunnel Server Port'] = j_data['ssltunnelserverport']
+    if 'tcpserverport' in inc_query.json().keys():
+        return_data['TCP Server Port'] = j_data['tcpserverport']
+    return return_data
 
 class modaltest(Modal, title="Enter email"):
     answer = TextInput(label="Enter email", style=discord.TextStyle.short, required=True)
     
     async def on_submit(self, interaction):
         print(self.answer)
-        incident_id = xsoar_create_incident(self.answer)
-        await interaction.response.send_message(f'{self.answer} - {incident_id} ')
+        inc_id = xsoar_create_incident(self.answer)
+        await interaction.response.send_message(f'{self.answer}, please check your email')
+
+        # TODO - send only to DM and need to wait for the playbook to run
+        # sleep(60)
+        # inc_data = xsoar_query_inc(inc_id)
+        # await interaction.response.send_message(inc_data)
 
 class DropdownView(View):
     @discord.ui.select(min_values=1, max_values=1, options= [
