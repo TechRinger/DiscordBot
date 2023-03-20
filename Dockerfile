@@ -1,5 +1,4 @@
 ARG PYTHON_VERSION=3.11
-ARG POETRY_VERSION=1.4.1
 
 FROM python:${PYTHON_VERSION}-alpine
 
@@ -11,7 +10,7 @@ RUN apk add --no-cache \
         libffi-dev && \
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile=minimal && \
     source $HOME/.cargo/env && \
-    pip install --no-cache-dir poetry==${POETRY_VERSION} && \
+    pip install --no-cache-dir poetry==1.4.1 && \
     apk del \
         curl \
         gcc \
