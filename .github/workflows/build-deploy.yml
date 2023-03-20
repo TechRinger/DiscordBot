@@ -54,5 +54,4 @@ jobs:
             DISCORD_BOT_TOKEN=put_discord_token_here
             DISCORD_GUILD=put_guild_here 
             OPENAI_API_TOKEN=put_openai_api_here
-            PYTHON_VERSION=3.11
             POETRY_VERSION=1.4.1

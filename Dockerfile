@@ -1,3 +1,6 @@
+ARG PYTHON_VERSION=3.11
+ARG POETRY_VERSION=1.4.1
+
 FROM python:${PYTHON_VERSION}-alpine
 
 RUN apk add --no-cache \
