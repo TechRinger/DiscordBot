@@ -55,7 +55,4 @@ jobs:
             DISCORD_GUILD=put_guild_here 
             OPENAI_API_TOKEN=put_openai_api_here
             POETRY_VERSION=1.4.1
-          args: |
-            PYTHON_VERSION=3.11
-            POETRY_VERSION=1.4.1
             
