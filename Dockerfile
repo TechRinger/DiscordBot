@@ -20,9 +20,12 @@ RUN apk add --no-cache \
 
 # Install project dependencies
 WORKDIR /bot
-RUN poetry config virtualenvs.create false
+COPY . .
 COPY pyproject.toml poetry.lock ./
-RUN poetry install
+RUN poetry config virtualenvs.create false \
+    && poetry install --no-ansi
+
+
 
 # Copy the source code in last to optimize rebuilding the image
 COPY . .
