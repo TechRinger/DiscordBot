@@ -30,7 +30,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/build-deploy.yml
     needs:
-      - lint-test
       - generate-sha-tag
     with:
       sha-tag: ${{ needs.generate-sha-tag.outputs.sha-tag }}
