@@ -44,10 +44,13 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          cache-from: type=registry,ref=ghcr.io/techringer/discord-bot:latest
+          cache-from: type=registry,ref=ghcr.io/${{ github.repository }}/discord-bot:latest
           cache-to: type=inline
           tags: |
-            ghcr.io/techringer/discord-bot:latest
-            ghcr.io/techringer/discord-bot:${{ inputs.sha-tag }}
+            ghcr.io/${{ github.repository }}/discord-bot:latest
+            ghcr.io/${{ github.repository }}/discord-bot:${{ inputs.sha-tag }}
           build-args: |
             git_sha=${{ github.sha }}
+            DISCORD_BOT_TOKEN=put_discord_token_here
+            DISCORD_GUILD=put_guild_here 
+            OPENAI_API_TOKEN=put_openai_api_here
