@@ -1,5 +1,5 @@
 # This example requires the 'message_content' privileged intent to function.
-
+import discord
 from discord.ext import commands
 
 # Defines a custom Select containing colour options
