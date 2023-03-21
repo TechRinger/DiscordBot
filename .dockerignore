@@ -15,7 +15,5 @@ Vagrantfile
 .travis.yml
 *.log
 docker
-LICENSE
-README.md
 .editorconfig
 .github/*
