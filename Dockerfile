@@ -16,14 +16,15 @@ RUN apk add --no-cache \
         gcc \
         libressl-dev \
         musl-dev \
-        libffi-dev
+        libffi-dev && \
+    mkdir -p /bot/bot
 
 # Install project dependencies
 WORKDIR /bot
-COPY ./bot/*.py pyproject.toml poetry.lock ./
-#COPY pyproject.toml poetry.lock ./
-RUN poetry config virtualenvs.create false
-RUN poetry install
+COPY pyproject.toml poetry.lock ./
+COPY ./bot/*.py ./bot
+RUN poetry config virtualenvs.create false && \
+    poetry install
 
 
 ENTRYPOINT ["poetry"]
