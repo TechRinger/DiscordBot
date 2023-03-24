@@ -1,10 +1,13 @@
 import os
 import discord
+from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
 from dotenv import load_dotenv
 import requests
 from time import sleep
+import openai
+import asyncio
 
 
 load_dotenv()
@@ -12,6 +15,7 @@ TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
 GUILD = os.getenv ('DISCORD_GUILD')
 XSOAR_URL = os.getenv('XSOAR_URL')
 XSOAR_TOKEN = os.getenv('XSOAR_BOT_TOKEN')
+openai.api_key = os.getenv('OPENAI_API_TOKEN')
 
 XSOAR_HEADERS = {'content-type': 'application/json',
             'accept': 'application/json',
@@ -98,11 +102,38 @@ async def send_message(message, user_message, is_private):
 def run_discord_bot():
     intents = discord.Intents.default()
     intents.message_content = True
-    client = discord.Client(intents=intents)
+    # client = discord.Client(intents=intents)
+    client = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
     @client.event
     async def on_ready():
         print(f'{client.user} is now running!')
+        try:
+            synced = await client.tree.sync()
+            print(f'Synced {len(synced)} command(s)')
+        except Exception as e:
+            print(e)
+
+    @client.tree.command(name="hello")
+    async def hello(interaction: discord.Interaction):
+        await interaction.response.send_message("Hello", ephemeral=True)
+
+    @client.tree.command(name="prompt")
+    @app_commands.describe(message='Message for ChatGPT')
+    async def prompt(interaction: discord.Interaction, message:str):
+        try:
+            await interaction.response.defer()
+            response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[
+                {'role': 'system', 'content': 'you are a helpful assistant'},
+                {'role': 'user', 'content': message}]
+            )
+            print(response)
+            embed = discord.Embed(title='Response', url='', description=f'{response["choices"][0]["message"]["content"]}', color=discord.Color.blue())
+            await asyncio.sleep(4)
+            await interaction.followup.send(f'{interaction.user.mention}: {message}', embed=embed)
+        except Exception as e:
+            print(e)
+            await interaction.followup.send("There seems to be an issue with ChatGPT, please contact discord admins", ephemeral=True)
 
     @client.event
     async def on_message(message):
@@ -123,6 +154,7 @@ def run_discord_bot():
                 await send_message(message, user_message, is_private=True)
             else:
                 await send_message(message, user_message, is_private=False)
+
         
 
     client.run(TOKEN)
