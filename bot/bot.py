@@ -24,7 +24,7 @@ XSOAR_HEADERS = {'content-type': 'application/json',
 def xsoar_create_incident(email: str) -> str:
     body = {'CustomFields': {'emailsender': f'{email}', 'emailsubject': f'Vulnerability Lab for {email}'},
             'name': f'Discord Bot Incident for {email}',
-            'playbookId': '09481d3c-79c8-4ff3-8df3-982a17e5600d',
+            'playbookId': '9969b7b3-ed19-4d7f-8de2-a165b153f557',
             'type': 'Vulnerability Lab Setup',
             'severity': 1,
             'createInvestigation': True
