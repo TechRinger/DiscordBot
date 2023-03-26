@@ -9,6 +9,7 @@ from time import sleep
 import openai
 import asyncio
 
+# TODO - check into switching from requests to demisto.client
 
 load_dotenv()
 TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
@@ -21,8 +22,14 @@ XSOAR_HEADERS = {'content-type': 'application/json',
             'accept': 'application/json',
             'Authorization': XSOAR_TOKEN}
 
-def xsoar_create_incident(email: str) -> str:
-    body = {'CustomFields': {'emailsender': f'{email}', 'emailsubject': f'Vulnerability Lab for {email}'},
+def xsoar_create_incident(email: str, user:str = '') -> str:
+    body = {'CustomFields': {
+                'emailsender': f'{email}', 
+                'emailsubject': f'Vulnerability Lab for {email}',
+                'campaignemailsubject': f'Vulnerability Lab for {email}',
+                'externalsource': 'Discord',
+                'sourceusername': user
+                },
             'name': f'Discord Bot Incident for {email}',
             'playbookId': '9969b7b3-ed19-4d7f-8de2-a165b153f557',
             'type': 'Vulnerability Lab Setup',
@@ -31,6 +38,8 @@ def xsoar_create_incident(email: str) -> str:
             }
 
     # TODO - query to see if there's already an INC first
+    # TODO - SSL cert
+    print(body)
     r = requests.post(url=f'{XSOAR_URL}/incident', headers=XSOAR_HEADERS, json=body, verify=False)
     return r.json()['id']
     
@@ -52,10 +61,11 @@ def xsoar_query_inc(inc_id):
 
 class modaltest(Modal, title="Enter email"):
     answer = TextInput(label="Enter email", style=discord.TextStyle.short, required=True)
-    
+    user = ''
+
     async def on_submit(self, interaction):
-        print(self.answer)
-        inc_id = xsoar_create_incident(self.answer)
+        print(f'Email is {self.answer}, Discord username is {self.user}')
+        inc_id = xsoar_create_incident(self.answer, self.user)
         await interaction.response.send_message(f'{self.answer}, please check your email')
 
         # TODO - send only to DM and need to wait for the playbook to run
@@ -72,7 +82,10 @@ class DropdownView(View):
     async def select_callback(self, interaction, select):
         if select.values[0] == 'Vul-Lab':
             select.disabled = True
-            await interaction.response.send_modal(modaltest())
+            # The modal needs the discord username passed into it because it doesn't have access
+            m = modaltest()
+            m.user = str(interaction.user)
+            await interaction.response.send_modal(m)
             # TODO how to disable select and use a modal??
             # await interaction.followup.edit_message(view=self)
         else:
