@@ -56,4 +56,12 @@ jobs:
             DISCORD_GUILD=put_guild_here 
             OPENAI_API_TOKEN=put_openai_api_here
             POETRY_VERSION=1.4.1
+      - name: Create Kubeconfig
+        run: |
+            mkdir ${HOME}/.kube
+            echo ${{ secrets.KUBE_CONFIG}} | base64 --decode > ${Home}/.kube/config
+      - name: Recreate container
+        run: |
+            POD_NAME="$(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)"
+            kubectl delete pods -n bots $POD_NAME
             
