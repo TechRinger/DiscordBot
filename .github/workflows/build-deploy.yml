@@ -59,7 +59,7 @@ jobs:
       - name: Create Kubeconfig
         run: |
             mkdir ${HOME}/.kube
-            echo ${{ secrets.KUBE_CONFIG}} | base64 --decode > ${Home}/.kube/config
+            echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${Home}/.kube/config
       - name: Recreate container
         run: |
             POD_NAME="$(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)"
