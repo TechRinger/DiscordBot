@@ -59,6 +59,7 @@ jobs:
       - name: Create Kubeconfig
         run: |
             mkdir ${HOME}/.kube
+            touch ${Home}/.kube/config
             echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${Home}/.kube/config
       - name: Recreate container
         run: |
