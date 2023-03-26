@@ -56,10 +56,14 @@ jobs:
             DISCORD_GUILD=put_guild_here 
             OPENAI_API_TOKEN=put_openai_api_here
             POETRY_VERSION=1.4.1
+  recreate:
+    name: Build & Push
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Create Kubeconfig
         run: |
             mkdir ${HOME}/.kube
-            touch ${Home}/.kube/config
             echo ${{ secrets.KUBE_CONFIG }} | base64 --decode > ${Home}/.kube/config
       - name: Recreate container
         run: |
