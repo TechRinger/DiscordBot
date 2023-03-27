@@ -89,8 +89,28 @@ jobs:
       - name: Recreate container
         run: |
             kubectl delete pods -n bots $(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)
-  
-  notify-complete:
-    if: github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/notify-complete.yml
-    secrets: inherit
+
+  Notify:
+    name: Image Push Complete
+    runs-on: ubuntu-latest
+    steps:
+    # - name: send custom message with args
+    #   uses: appleboy/discord-action@master
+    #   with:
+    #     webhook_id: ${{ secrets.WEBHOOK_ID }}
+    #     webhook_token: ${{ secrets.DISCORD_WEBHOOK }}
+    #     args: The ${{ github.event_name }} successfully pushed the image.
+
+    - name: Discord notification
+      uses: Ilshidur/action-discord@master
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+      with:
+        args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image.'
+     
+
+#   notify-complete:
+#     if: github.ref == 'refs/heads/main'
+#     uses: ./.github/workflows/notify-complete.yml
+#     secrets: inherit
