@@ -16,6 +16,7 @@ TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
 GUILD = os.getenv ('DISCORD_GUILD')
 XSOAR_URL = os.getenv('XSOAR_URL')
 XSOAR_TOKEN = os.getenv('XSOAR_BOT_TOKEN')
+XSOAR_PLAYBOOK = os.getenv('XSOAR_PLAYBOOK')
 openai.api_key = os.getenv('OPENAI_API_TOKEN')
 
 XSOAR_HEADERS = {'content-type': 'application/json',
@@ -31,7 +32,7 @@ def xsoar_create_incident(email: str, user:str = '') -> str:
                 'sourceusername': user
                 },
             'name': f'Discord Bot Incident for {email}',
-            'playbookId': '9969b7b3-ed19-4d7f-8de2-a165b153f557',
+            'playbookId': '{XSOAR_PLAYBOOK}',
             'type': 'Vulnerability Lab Setup',
             'severity': 1,
             'createInvestigation': True
