@@ -56,18 +56,10 @@ jobs:
             DISCORD_GUILD=put_guild_here 
             OPENAI_API_TOKEN=put_openai_api_here
             POETRY_VERSION=1.4.1
-  recreate:
-    name: Recreate container
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Get container name
+      - name: Create Kubeconfig
         run: |
-            POD_NAME="$(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)"
-      - name: Trigger deploy
-        uses: Consensys/kubernetes-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-        with:
-          args: delete pods -n bots $POD_NAME            
+            mkdir ~/.kube
+            echo ${{ secrets.KUBE_CONFIG}} | base64 --decode > ~/.kube/config
+      - name: Recreate container
+        run: |
+            kubectl delete pods -n bots $(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)
