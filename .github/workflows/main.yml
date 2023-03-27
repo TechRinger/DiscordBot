@@ -26,12 +26,12 @@ jobs:
           tag=$(cut -c 1-7 <<< $GITHUB_SHA)
           echo "sha-tag=$tag" >> $GITHUB_OUTPUT
 
-  build-deploy:
-    if: github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/build-deploy.yml
-    needs:
-      - generate-sha-tag
-    with:
-      sha-tag: ${{ needs.generate-sha-tag.outputs.sha-tag }}
-    secrets: inherit
+#   build-deploy:
+#     if: github.ref == 'refs/heads/main'
+#     uses: ./.github/workflows/build-deploy.yml
+#     needs:
+#       - generate-sha-tag
+#     with:
+#       sha-tag: ${{ needs.generate-sha-tag.outputs.sha-tag }}
+#     secrets: inherit
 
