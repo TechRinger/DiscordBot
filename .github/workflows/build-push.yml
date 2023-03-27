@@ -1,9 +1,7 @@
 name: Build & Push
 on:
-  workflow_run:
+  workflow_call:
     workflows: [CI]
-    types:
-      - completed
     inputs:
       sha-tag:
         description: "A short-form SHA tag for the commit that triggered this workflow"
@@ -51,7 +49,7 @@ jobs:
           cache-to: type=inline
           tags: |
             ghcr.io/techringer/discordbot:latest
-            ghcr.io/techringer/discordbot:${{ inputs.sha-tag }}
+            ghcr.io/techringer/discordbot:${{ steps.sha-tag.outputs.sha-tag }}
           build-args: |
             git_sha=${{ github.sha }}
             DISCORD_BOT_TOKEN=put_discord_token_here
@@ -65,3 +63,8 @@ jobs:
       - name: Recreate container
         run: |
             kubectl delete pods -n bots $(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)
+  
+  notify-complete:
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/notify-complete.yml
+    secrets: inherit
