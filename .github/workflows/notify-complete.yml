@@ -1,7 +1,7 @@
 name: Image Push Complete
 on:
   workflow_run:
-    workflows: [CI]
+    workflows: [NOT_USED]
     types:
       - completed
 

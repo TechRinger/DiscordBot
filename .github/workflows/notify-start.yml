@@ -2,7 +2,7 @@ name: discord message
 on:
   push:
     branches:
-      - main
+      - NOT_USED
   pull_request:
 
 jobs:

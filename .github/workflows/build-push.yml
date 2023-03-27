@@ -1,7 +1,7 @@
 name: Build & Push
 on:
   workflow_call:
-    workflows: [CI]
+    workflows: [NOT_USED]
     inputs:
       sha-tag:
         description: "A short-form SHA tag for the commit that triggered this workflow"
