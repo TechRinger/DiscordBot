@@ -1,7 +1,7 @@
 name: Build & Push
 on:
   workflow_run:
-    workflows: [IC]
+    workflows: [CI]
     types:
       - completed
     inputs:
