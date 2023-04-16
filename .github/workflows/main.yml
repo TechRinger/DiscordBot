@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   generate-sha-tag:
+    name: Generate SHA Tag
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     outputs:
@@ -103,19 +104,12 @@ jobs:
     needs: build
     if: ${{ success() }}
     steps:
-    # - name: Discord notification
-    #   uses: Ilshidur/action-discord@master
-    #   env:
-    #     DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-    #     uses: Ilshidur/action-discord@master
-    #   with:
-    #     args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image.'
     - name: Discord notification - Start
       uses: sarisia/actions-status-discord@v1
       with:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
         status: ${{ job.status }}
-        title: "The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image"
+        title: "The DiscordBot project successfully pushed the image"
         description: "Build process has completed sucessfully."
         url: "https://github.com/TechRinger/DiscordBot"
   
@@ -125,19 +119,12 @@ jobs:
     needs: build
     if: ${{ failure() }}
     steps:
-    - name: Discord notification
-      uses: Ilshidur/action-discord@master
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
-      with:
-        args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} failed build.'
     - name: Discord notification - Start
       uses: sarisia/actions-status-discord@v1
       with:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
         status: ${{ job.status }}
-        title: "The project {{ EVENT_PAYLOAD.repository.full_name }} failed build."
+        title: "The DiscordBot project failed build."
         description: "Build process failed build process."
         url: "https://github.com/TechRinger/DiscordBot"       
 
