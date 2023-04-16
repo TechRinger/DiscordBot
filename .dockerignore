@@ -17,3 +17,4 @@ Vagrantfile
 docker
 .editorconfig
 .github/*
+DOCKERFILE
