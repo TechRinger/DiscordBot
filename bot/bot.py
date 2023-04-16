@@ -1,6 +1,6 @@
 import os
 import discord
-from xsoar import XSOARClient
+from . import xsoar
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
@@ -16,7 +16,7 @@ XSOAR_API_KEY = os.getenv('XSOAR_API_KEY')
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 
-xsoar_client = XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
+xsoar_client = xsoar.XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
 
 
 class ModalEmail(Modal, title="Enter email",):
