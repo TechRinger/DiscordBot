@@ -11,15 +11,15 @@ import os
 
 DISCORD_BOT_TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
 DISCORD_GUILD = os.getenv ('DISCORD_GUILD')
-XSOAR_URL = os.getenv('XSOAR_URL')
-XSOAR_API_KEY = os.getenv('XSOAR_API_KEY') 
+SOAR_URL = os.getenv('SOAR_URL')
+SOAR_API_KEY = os.getenv('SOAR_API_KEY') 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-CLIENT_TYPE = os.getenv('CLIENT_TYPE')
+SOAR_TYPE = os.getenv('SOAR_TYPE')
 
-if CLIENT_TYPE == "xsoar":
-    xsoar_client = XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
+if SOAR_TYPE == "xsoar":
+    xsoar_client = XSOARClient(url=SOAR_URL, api_key=SOAR_API_KEY, bot_type='Discord')
 else:
-    print(f'{CLIENT_TYPE} is not supported at this time.')
+    print(f'{SOAR_TYPE} is not supported at this time.')
     exit()
 
 class ModalEmail(Modal, title="Enter email",):
@@ -32,9 +32,9 @@ class ModalEmail(Modal, title="Enter email",):
         print(f'Email is {self.answer}, Discord username is {self.user}, Incident Type is {self.incident_type}')
         self.inc_id = xsoar_client.create_incident(email=self.answer, user=self.user, incident_type=self.incident_type)
         if self.incident_type == "Palo Alto Networks - On Site Spare Replacement Process" or self.incident_type == "Vulnerability Lab Setup":
-            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{XSOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.\n Please check your email for details.", color=0x00ff00)
+            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{SOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.\n Please check your email for details.", color=0x00ff00)
         else:
-            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{XSOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.", color=0x00ff00)
+            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{SOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.", color=0x00ff00)
         await interaction.response.send_message(embed=embeded_message)
 
         #await interaction.response.send_message(content="f'Your incident ID is {inc_id}\n Please check your email for details.'",)
@@ -124,7 +124,7 @@ def run_discord_bot():
     async def ioc(interaction: discord.Interaction, message:str):
             await interaction.response.defer()
             response = xsoar_client.create_ioc(user=interaction.user, indicator=message, incident_type="Process Indicators")
-            embed = discord.Embed(title=f'IOC Created:\n{message}', url=f'{XSOAR_URL}/#/incident/{response}', description=f'Incident ID for {response} has been created.', color=discord.Color.blue())
+            embed = discord.Embed(title=f'IOC Created:\n{message}', url=f'{SOAR_URL}/#/incident/{response}', description=f'Incident ID for {response} has been created.', color=discord.Color.blue())
             await asyncio.sleep(4)
             await interaction.followup.send(f'{interaction.user.mention}: {message}', embed=embed)
             
