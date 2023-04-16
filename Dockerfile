@@ -23,7 +23,7 @@ RUN apk add --no-cache \
 WORKDIR /bot
 # COPY pyproject.toml poetry.lock ./
 # COPY ./bot/*.py ./bot
-COPY . .
+COPY ./bot .
 RUN poetry config virtualenvs.create false && \
     poetry install
 
