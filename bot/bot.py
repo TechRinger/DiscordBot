@@ -1,73 +1,40 @@
 import os
 import discord
+from xsoar import XSOARClient
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
-from dotenv import load_dotenv
-import requests
 from time import sleep
 import openai
 import asyncio
+import os
 
-# TODO - check into switching from requests to demisto.client
-
-load_dotenv()
-TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
-GUILD = os.getenv ('DISCORD_GUILD')
+DISCORD_BOT_TOKEN = os.getenv ('DISCORD_BOT_TOKEN')
+DISCORD_GUILD = os.getenv ('DISCORD_GUILD')
 XSOAR_URL = os.getenv('XSOAR_URL')
-XSOAR_TOKEN = os.getenv('XSOAR_BOT_TOKEN')
-XSOAR_PLAYBOOK = os.getenv('XSOAR_PLAYBOOK')
-openai.api_key = os.getenv('OPENAI_API_TOKEN')
+XSOAR_API_KEY = os.getenv('XSOAR_API_KEY') 
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
-XSOAR_HEADERS = {'content-type': 'application/json',
-            'accept': 'application/json',
-            'Authorization': XSOAR_TOKEN}
 
-def xsoar_create_incident(email: str, user:str = '') -> str:
-    body = {'CustomFields': {
-                'emailsender': f'{email}', 
-                'emailsubject': f'Vulnerability Lab for {email}',
-                'campaignemailsubject': f'Vulnerability Lab for {email}',
-                'externalsource': 'Discord',
-                'sourceusername': user
-                },
-            'name': f'Discord Bot Incident for {email}',
-            'playbookId': '{XSOAR_PLAYBOOK}',
-            'type': 'Vulnerability Lab Setup',
-            'severity': 1,
-            'createInvestigation': True
-            }
+xsoar_client = XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
 
-    # TODO - query to see if there's already an INC first
-    # TODO - SSL cert
-    print(body)
-    r = requests.post(url=f'{XSOAR_URL}/incident', headers=XSOAR_HEADERS, json=body, verify=False)
-    return r.json()['id']
-    
 
-def xsoar_query_inc(inc_id):
-    return_data = {'id': inc_id}
-
-    inc_query = requests.post(url=f'{XSOAR_URL}/investigation/{inc_id}', headers=XSOAR_HEADERS, verify=False)
-    j_data = inc_query.json()
-    if 'httpsserverport' in j_data.keys():
-        return_data['HTTPS Server Port'] = j_data['httpsserverport']
-    if 'randomhostname' in inc_query.json().keys():
-        return_data['Random Hostname'] = j_data['randomhostname']
-    if 'ssltunnelserverport' in inc_query.json().keys():
-        return_data['SSL Tunnel Server Port'] = j_data['ssltunnelserverport']
-    if 'tcpserverport' in inc_query.json().keys():
-        return_data['TCP Server Port'] = j_data['tcpserverport']
-    return return_data
-
-class modaltest(Modal, title="Enter email"):
+class ModalEmail(Modal, title="Enter email",):
     answer = TextInput(label="Enter email", style=discord.TextStyle.short, required=True)
     user = ''
-
+    incident_type = ''
+    inc_id = ''
+    message = ''
     async def on_submit(self, interaction):
-        print(f'Email is {self.answer}, Discord username is {self.user}')
-        inc_id = xsoar_create_incident(self.answer, self.user)
-        await interaction.response.send_message(f'{self.answer}, please check your email')
+        print(f'Email is {self.answer}, Discord username is {self.user}, Incident Type is {self.incident_type}')
+        self.inc_id = xsoar_client.create_incident(email=self.answer, user=self.user, incident_type=self.incident_type)
+        if self.incident_type == "Palo Alto Networks - On Site Spare Replacement Process" or self.incident_type == "Vulnerability Lab Setup":
+            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{XSOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.\n Please check your email for details.", color=0x00ff00)
+        else:
+            embeded_message = discord.Embed(title=f"Hi {self.user}", url=f'{XSOAR_URL}/#/incident/{self.inc_id}', description=f"Your incident ID is {self.inc_id}.", color=0x00ff00)
+        await interaction.response.send_message(embed=embeded_message)
+
+        #await interaction.response.send_message(content="f'Your incident ID is {inc_id}\n Please check your email for details.'",)
 
         # TODO - send only to DM and need to wait for the playbook to run
         # sleep(60)
@@ -76,19 +43,26 @@ class modaltest(Modal, title="Enter email"):
 
 class DropdownView(View):
     @discord.ui.select(min_values=1, max_values=1, options= [
-            discord.SelectOption(label='Vul-Lab', description='Create your own Vul-Lab instance'),
+            discord.SelectOption(label='Vulnerability Lab Setup', description='Create your own Vul-Lab instance'),
+            discord.SelectOption(label='Palo Alto Networks - On Site Spare Replacement Process', 
+                                 description='Get step by step instructions on how to replace your firewall'),
             discord.SelectOption(label='Select a CVE', description='Spin up a container to deomonstrate a CVE'),
             discord.SelectOption(label='Hacking Challenge', description='Spin up a vulnerable container for a challenge'),
         ])
     async def select_callback(self, interaction, select):
         if select.values[0] == 'Vul-Lab':
             select.disabled = True
-            # The modal needs the discord username passed into it because it doesn't have access
-            m = modaltest()
+            m = ModalEmail()
             m.user = str(interaction.user)
+            m.incident_type = 'Vulnerability Lab Setup'
             await interaction.response.send_modal(m)
-            # TODO how to disable select and use a modal??
-            # await interaction.followup.edit_message(view=self)
+        elif select.values[0] == 'Palo Alto Networks - On Site Spare Replacement Process':
+            select.disabled = True
+            m = ModalEmail()
+            m.user = str(interaction.user)
+            m.incident_type = select.values[0]
+            await interaction.response.send_modal(m)
+
         else:
             select.disabled = True
             await interaction.response.edit_message(view=self)
@@ -96,7 +70,6 @@ class DropdownView(View):
 
 async def send_message(message, user_message, is_private):
     try:
-
         view = DropdownView()
 
         context = message.author if is_private else message.channel
@@ -107,11 +80,8 @@ async def send_message(message, user_message, is_private):
         else:
             # TODO send to chatgpt
             await context.send("I didn't understand what you wrote. Try typing '!help'")
-
-
     except Exception as e:
         print(e)
-
 
 def run_discord_bot():
     intents = discord.Intents.default()
@@ -119,7 +89,7 @@ def run_discord_bot():
     # client = discord.Client(intents=intents)
     client = commands.Bot(command_prefix='!', intents=discord.Intents.all())
 
-    @client.event
+    @client.listen()
     async def on_ready():
         print(f'{client.user} is now running!')
         try:
@@ -132,8 +102,31 @@ def run_discord_bot():
     async def hello(interaction: discord.Interaction):
         await interaction.response.send_message("Hello", ephemeral=True)
 
-    @client.tree.command(name="prompt")
-    @app_commands.describe(message='Message for ChatGPT')
+    @client.tree.command(name="vul-lab", description="Create your own Vul-Lab Instance")
+    async def vullab(interaction: discord.Interaction):
+            m = ModalEmail()
+            m.user = str(interaction.user)
+            m.incident_type = 'Vulnerability Lab Setup'
+            m.message = 'Create your own Vul-Lab instance'
+            await interaction.response.send_modal(m)
+    @client.tree.command(name="oss", description="Palo Alto Networks - On Site Spare Replacement Process")
+    async def oss(interaction: discord.Interaction,):
+            m = ModalEmail()
+            m.user = str(interaction.user)
+            m.incident_type = 'Palo Alto Networks - On Site Spare Replacement Process'
+            await interaction.response.send_modal(m)
+
+    @client.tree.command(name="ioc", description="Create IOC Entry")
+    @app_commands.describe(message='IOC Entry')    
+    async def ioc(interaction: discord.Interaction, message:str):
+            await interaction.response.defer()
+            response = xsoar_client.create_ioc(user=interaction.user, indicator=message, incident_type="Process Indicators")
+            embed = discord.Embed(title=f'IOC Created:\n{message}', url=f'{XSOAR_URL}/#/incident/{response}', description=f'Incident ID for {response} has been created.', color=discord.Color.blue())
+            await asyncio.sleep(4)
+            await interaction.followup.send(f'{interaction.user.mention}: {message}', embed=embed)
+            
+    @client.tree.command(name="chatgpt", description="Ask ChatGPT")
+    @app_commands.describe(message='Ask ChatGPT')
     async def prompt(interaction: discord.Interaction, message:str):
         try:
             await interaction.response.defer()
@@ -149,14 +142,13 @@ def run_discord_bot():
             print(e)
             await interaction.followup.send("There seems to be an issue with ChatGPT, please contact discord admins", ephemeral=True)
 
-    @client.event
+    @client.listen()
     async def on_message(message):
-        if message.author == client.user:
+        if message.author == client.user or message.author.bot == True:
             return
         elif str(message.channel.type) != 'private' and str(message.channel) != 'vul-lab':
             return
         else:
-
             username = str(message.author)
             user_message = str(message.content)
             channel = str(message.channel)
@@ -171,4 +163,4 @@ def run_discord_bot():
 
         
 
-    client.run(TOKEN)
+    client.run(DISCORD_BOT_TOKEN)
