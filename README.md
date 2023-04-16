@@ -1,20 +1,18 @@
-<h1>
-    <br>
-    <div align="center">
-        <h3 align="center"><b>Discord Bot</b></h3>
-    <p align="center">An awesome Discord bot using XSOAR and ChatGPT!</p>
-    </div>
-</h1>
+<br>
+<div align="center">
+    <h3 align="center"><b>Discord Bot</b></h3>
+<p align="center">An awesome Discord bot using XSOAR and ChatGPT!</p>
+</div>
 
+<a id="readme-top">
 <!-- TABLE OF CONTENTS -->
 <details>
-  <summary>Table of Contents</summary>
+  <summary><a id="readme-top">Table of Contents</a></summary>
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#Enviromental Variables">Enviromental Variables</a></li>  
-    <li><a href="#Sample Deplyoment">Sample Deplyoment</a></li>
-    <li><a href="#Roadmap">Roadmap</a></li>
-    <li><a href="#installation">Installation</a></li>
+    <li><a href="#enviromental-variables">Enviromental Variables</a></li>  
+    <li><a href="#sample-deplyoment">Sample Deplyoment</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
   </ol>
 </details>
 
@@ -31,6 +29,7 @@ Here's why Discord:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<!-- Enviromental Variables -->
 ## Enviromental Variables
 
 This section lists out the enviromental varaibles used in the container
@@ -44,7 +43,7 @@ This section lists out the enviromental varaibles used in the container
 | OPENAI_API_TOKEN | Token used to talk to OpenAI (CHatGPT) | im-an00b-tdfjm3kj132fNGvE8jG3T3BlbkFJXnSm9Idsfaj3k32j4 |<https://platform.openai.com/signup|>
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- GETTING STARTED -->
+<!-- Sample Deployment -->
 ## Sample Deplyoment
 
 This is an example of how you could use a helm release to deploy the bot into your kubernetes enviroment.
@@ -102,9 +101,7 @@ This is an example of how you could use a helm release to deploy the bot into yo
         repository: ghcr.io/techringer/discordbot
         tag: latest
         pullPolicy: Always
-
-        # env:
-        #   ...
+        
         envFrom:
         - secretRef:
             name: discord-xsoar-secret
@@ -154,12 +151,12 @@ This is an example of how you could use a helm release to deploy the bot into yo
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-<!-- ROADMAP -->
+<!-- Doarmap -->
 ## Roadmap
 
 * [x] Add Vul-Lab creation
   * [ ] Validate Vul-Lab instance before creating another for the user/email
-* [ ] Add IOC submittal/check
+* [x] Add IOC submittal/check
 * [ ] Add CVE enviroment creation
 * [ ] Add GOAT enviroment creation
 
