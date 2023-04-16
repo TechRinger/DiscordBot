@@ -37,7 +37,7 @@ jobs:
           echo "sha-tag=$tag" >> $GITHUB_OUTPUT
 
   build:
-    name: Build & Push
+    name: Build
     runs-on: ubuntu-latest
     needs: generate-sha-tag
 
@@ -82,18 +82,28 @@ jobs:
             git_sha=${{ github.sha }}
             DISCORD_BOT_TOKEN=put_discord_token_here
             DISCORD_GUILD=put_guild_here 
+            SOAR_TYPE=put_soar_type_here
+            SOAR_API_KEY=put_soar_api_key_here
+            SOAR_URL=put_soar_url_here
             OPENAI_API_TOKEN=put_openai_api_here
             POETRY_VERSION=1.4.1
+  push:
+    name: Refresh Kubernetes Image
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ success() }}
+    continue-on-error: true
+    steps:
       - name: Create Kubeconfig
         run: |
-            mkdir ~/.kube
-            echo ${{ secrets.KUBE_CONFIG}} | base64 --decode > ~/.kube/config
+          mkdir ~/.kube
+          echo ${{ secrets.KUBE_CONFIG}} | base64 --decode > ~/.kube/config
       - name: Recreate container
         run: |
-            kubectl delete pods -n bots $(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)
+          kubectl delete pods -n bots $(kubectl get pods -n bots | egrep "discord" | cut -d ' ' -f1)
 
-  notify-complete:
-    name: Image Push Complete
+  notify-build-complete:
+    name: Image Build Complete
     runs-on: ubuntu-latest
     needs: build
     if: ${{ success() }}
@@ -107,8 +117,8 @@ jobs:
         description: "Build process has completed sucessfully."
         url: "https://github.com/TechRinger/DiscordBot"
   
-  notify-failure:
-    name: Image Push Failed
+  notify-build-failure:
+    name: Image Build Failed
     runs-on: ubuntu-latest
     needs: build
     if: ${{ failure() }}
@@ -122,3 +132,32 @@ jobs:
         description: "Build process failed build process."
         url: "https://github.com/TechRinger/DiscordBot"       
 
+  notify-push-complete:
+    name: Image Build Complete
+    runs-on: ubuntu-latest
+    needs: push
+    if: ${{ success() }}
+    steps:
+    - name: Discord notification - Start
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "K8s Pod Refresh"
+        description: "The DiscordBot project refreshed the K8s pod."
+        url: "https://github.com/TechRinger/DiscordBot"
+  
+  notify-push-failure:
+    name: K8s Image Update Failed
+    runs-on: ubuntu-latest
+    needs: push
+    if: ${{ failure() }}
+    steps:
+    - name: Discord notification - Start
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: 'Failure'
+        title: "K8s Pod Refresh"
+        description: "The DiscordBot project failed to refresh K8s pod."
+        url: "https://github.com/TechRinger/DiscordBot"
