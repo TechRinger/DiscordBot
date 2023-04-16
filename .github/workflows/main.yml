@@ -20,13 +20,6 @@ jobs:
     outputs:
       sha-tag: ${{ steps.sha-tag.outputs.sha-tag }}
     steps:
-    #   - name: Discord notification
-    #     uses: Ilshidur/action-discord@master
-    #     env:
-    #       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-    #       uses: Ilshidur/action-discord@master
-    #     with:
-    #       args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has started a new build.'      
       - name: Discord notification - Start
         uses: sarisia/actions-status-discord@v1
         if: always()
@@ -123,7 +116,7 @@ jobs:
       uses: sarisia/actions-status-discord@v1
       with:
         webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        status: ${{ job.status }}
+        status: 'Failure'
         title: "The DiscordBot project failed build."
         description: "Build process failed build process."
         url: "https://github.com/TechRinger/DiscordBot"       
