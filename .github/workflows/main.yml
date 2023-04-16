@@ -19,27 +19,27 @@ jobs:
     outputs:
       sha-tag: ${{ steps.sha-tag.outputs.sha-tag }}
     steps:
-      - name: Discord notification
-        uses: Ilshidur/action-discord@master
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          uses: Ilshidur/action-discord@master
+    #   - name: Discord notification
+    #     uses: Ilshidur/action-discord@master
+    #     env:
+    #       DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+    #       uses: Ilshidur/action-discord@master
+    #     with:
+    #       args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has started a new build.'      
+      - name: Discord notification - Start
+        uses: sarisia/actions-status-discord@v1
+        if: always()
         with:
-          args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} has started a new build.'      
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: ${{ job.status }}
+          title: "Discord Bot was updated"
+          description: "Build process has started"
+          url: "https://github.com/TechRinger/DiscordBot"
       - name: Create SHA Container tag
         id: sha-tag
         run: |
           tag=$(cut -c 1-7 <<< $GITHUB_SHA)
           echo "sha-tag=$tag" >> $GITHUB_OUTPUT
-
-#   build-deploy:
-#     if: github.ref == 'refs/heads/main'
-#     uses: ./.github/workflows/build-push.yml
-#     needs:
-#       - generate-sha-tag
-#     with:
-#       sha-tag: ${{ needs.generate-sha-tag.outputs.sha-tag }}
-#     secrets: inherit
 
   build:
     name: Build & Push
@@ -103,14 +103,21 @@ jobs:
     needs: build
     if: ${{ success() }}
     steps:
-
-    - name: Discord notification
-      uses: Ilshidur/action-discord@master
-      env:
-        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        uses: Ilshidur/action-discord@master
+    # - name: Discord notification
+    #   uses: Ilshidur/action-discord@master
+    #   env:
+    #     DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+    #     uses: Ilshidur/action-discord@master
+    #   with:
+    #     args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image.'
+    - name: Discord notification - Start
+      uses: sarisia/actions-status-discord@v1
       with:
-        args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image.'
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "The project {{ EVENT_PAYLOAD.repository.full_name }} successfully pushed the image"
+        description: "Build process has completed sucessfully."
+        url: "https://github.com/TechRinger/DiscordBot"
   
   notify-failure:
     name: Image Push Failed
@@ -125,5 +132,12 @@ jobs:
         uses: Ilshidur/action-discord@master
       with:
         args: 'The project {{ EVENT_PAYLOAD.repository.full_name }} failed build.'
-       
+    - name: Discord notification - Start
+      uses: sarisia/actions-status-discord@v1
+      with:
+        webhook: ${{ secrets.DISCORD_WEBHOOK }}
+        status: ${{ job.status }}
+        title: "The project {{ EVENT_PAYLOAD.repository.full_name }} failed build."
+        description: "Build process failed build process."
+        url: "https://github.com/TechRinger/DiscordBot"       
 
