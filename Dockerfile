@@ -28,4 +28,4 @@ RUN poetry config virtualenvs.create false && \
 
 
 ENTRYPOINT ["poetry"]
-CMD ["run", "python", "-m", "bot"]
+CMD ["run", "python", "-m", "bot.__main__"]

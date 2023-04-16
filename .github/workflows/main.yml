@@ -29,6 +29,7 @@ jobs:
           title: "Discord Bot was updated"
           description: "Build process has started"
           url: "https://github.com/TechRinger/DiscordBot"
+          noprefix: true
       - name: Create SHA Container tag
         id: sha-tag
         run: |
