@@ -1,6 +1,4 @@
 # Methods to interact with XSOAR, independant of bot type.
-
-import re
 import requests
 
 class XSOARClient:

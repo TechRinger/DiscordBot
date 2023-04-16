@@ -1,6 +1,6 @@
 import os
 import discord
-from . import xsoar
+from bot.xsoar.xsoar import XSOARClient
 from discord import app_commands
 from discord.ext import commands
 from discord.ui import View, Modal, TextInput
@@ -14,10 +14,13 @@ DISCORD_GUILD = os.getenv ('DISCORD_GUILD')
 XSOAR_URL = os.getenv('XSOAR_URL')
 XSOAR_API_KEY = os.getenv('XSOAR_API_KEY') 
 openai.api_key = os.getenv('OPENAI_API_KEY')
+CLIENT_TYPE = os.getenv('CLIENT_TYPE')
 
-
-xsoar_client = xsoar.XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
-
+if CLIENT_TYPE == "xsoar":
+    xsoar_client = XSOARClient(url=XSOAR_URL, api_key=XSOAR_API_KEY, bot_type='Discord')
+else:
+    print(f'{CLIENT_TYPE} is not supported at this time.')
+    exit()
 
 class ModalEmail(Modal, title="Enter email",):
     answer = TextInput(label="Enter email", style=discord.TextStyle.short, required=True)

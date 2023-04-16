@@ -1,4 +1,4 @@
-from . import bot
+from . import discord_bot
 
 if __name__ == '__main__':
-    bot.run_discord_bot()
+    discord_bot.run_discord_bot()
