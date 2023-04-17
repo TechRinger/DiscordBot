@@ -14,7 +14,7 @@ DISCORD_GUILD = os.getenv ('DISCORD_GUILD')
 SOAR_URL = os.getenv('SOAR_URL')
 SOAR_API_KEY = os.getenv('SOAR_API_KEY') 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-SOAR_TYPE = os.getenv('SOAR_TYPE')
+SOAR_TYPE = os.getenv('SOAR_TYPE').lower()
 
 if SOAR_TYPE == "xsoar":
     xsoar_client = XSOARClient(url=SOAR_URL, api_key=SOAR_API_KEY, bot_type='Discord')
@@ -91,6 +91,7 @@ def run_discord_bot():
     intents.message_content = True
     # client = discord.Client(intents=intents)
     client = commands.Bot(command_prefix='!', intents=discord.Intents.all())
+    client.remove_command('help')
 
     @client.listen()
     async def on_ready():
@@ -136,6 +137,22 @@ def run_discord_bot():
             response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[
                 {'role': 'system', 'content': 'you are a helpful assistant'},
                 {'role': 'user', 'content': message}]
+            )
+            print(response)
+            embed = discord.Embed(title='Response', url='', description=f'{response["choices"][0]["message"]["content"]}', color=discord.Color.blue())
+            await asyncio.sleep(4)
+            await interaction.followup.send(f'{interaction.user.mention}: {message}', embed=embed)
+        except Exception as e:
+            print(e)
+            await interaction.followup.send("There seems to be an issue with ChatGPT, please contact discord admins", ephemeral=True)
+    @client.tree.command(name="ioc_info", description="Get the latest IOC Info")
+    @app_commands.describe(message='Get the latest IOC Info about')
+    async def prompt(interaction: discord.Interaction, message:str):
+        try:
+            await interaction.response.defer()
+            response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[
+                {'role': 'system', 'content': 'you are a helpful assistant'},
+                {'role': 'user', 'content': f'Provide any information on the cyber threat {message}.  Use the website https://https://unit42.paloaltonetworks.com whenever possible and return relient links' }]
             )
             print(response)
             embed = discord.Embed(title='Response', url='', description=f'{response["choices"][0]["message"]["content"]}', color=discord.Color.blue())
