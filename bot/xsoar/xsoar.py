@@ -1,5 +1,39 @@
 # Methods to interact with XSOAR, independant of bot type.
 import requests
+import re
+
+# Define the regular expressions for each type of input
+ip_regex = re.compile(r'\b(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(?:\[\.\]|\.)){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\b')
+cidr_regex = re.compile(r'\b(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(?:\[\.\]|\.)){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])(\/([0-9]|[1-2][0-9]|3[0-2]))\b')
+email_regex = re.compile(r'^[\w\.-]+@[\w\.-]+\.\w+$')
+url_regex = re.compile(r'^(http|https|ftp|hxxp|hxxps)://[\w\.-]+\.\w+$')
+domain_regex = re.compile(r'^[\w\.-]+\.\w+$')
+
+
+# Create the dictionary with the compiled regular expressions as values
+input_dict = {
+    'IP': ip_regex,
+    'CIDR': cidr_regex,
+    'Email': email_regex,
+    'URL': url_regex,
+    'Domain': domain_regex
+}
+
+# Function to check if the input matches any of the regular expressions
+def verify_input(input_str):
+    for key, value in input_dict.items():
+        if value.match(input_str):
+            return key
+    return None
+
+
+# Example usage:
+input_str = 'www.google.com'
+result = verify_input(input_str)
+if result:
+    print(f'The input "{input_str}" is a {result}.')
+else:
+    print(f'The input "{input_str}" is not valid.')
 
 class XSOARClient:
     
@@ -74,7 +108,7 @@ class XSOARClient:
             return_data['TCP Server Port'] = j_data['tcpserverport']
         return return_data
     
-    def create_ioc(self, user:str = '', severity:int = 1, incident_type:str = '', indicator:str = '', verdict:str = 'Malicious') -> str:
+    def create_ioc_incident(self, user:str = '', severity:int = 1, incident_type:str = '', indicator:str = '', verdict:str = 'Malicious') -> str:
         body = {'CustomFields': {
             'externalsource': f'{self.bot_type}',
             'sourceusername': f'{user}',
@@ -89,4 +123,73 @@ class XSOARClient:
         'createInvestigation': True
         }
         r = requests.post(url=f'{self.url}/incident', headers=self.headers, json=body, verify=False)
-        return r.json()['id']      
+        return r.json()['id']
+          
+    def create_ioc(self, indicator, user:str = '', severity:int = 1, ) -> str:
+        indicator_type = verify_input(indicator)
+
+        if indicator_type:
+            #body = {
+            # "indicator": {
+            #     "CustomFields": {
+            #         "tags": [
+            #             "DiscordBot"
+            #         ],
+            #         "Username": "CelticChaos#5944"
+            #     },
+            #     "value": "asdf.fdadsf.com",
+            #     "indicator_type": "Domain",
+            #     "score": 3,
+            #     "comments": [
+            #         {
+            #             "content": "test comment"
+            #         }
+            #     ]
+            # }
+            # }
+            body2 = {
+            "indicator": {
+                "CustomFields": {
+                    "tags": [
+                        "DiscordBot"
+                    ],
+                    "Username": f"{user}"
+                },
+                "value": f"{indicator}",
+                "indicator_type": f"{indicator_type}",
+                "score": 3,
+                "comments": [
+                    {
+                        "content": "test comment"
+                    }
+                ]
+            }
+            }
+            body =  { 
+              'indicator': {
+                'CustomFields': {
+                    'tags': [
+                        "DiscorBot"
+                    ],
+                    'Username': f'{user}'
+                },
+                'value': f'{indicator}',
+                'indicator_type': f'{indicator_type}',
+                'score': 3,
+                'comments': [
+                    {
+                        'content': f'Created by DiscordBot for {user}'
+                    }
+                ]
+                }
+            }
+            print(body)
+            print(self.url)
+            r = requests.post(url=f'{self.url}/indicator/create', headers=self.headers, json=body, verify=False)
+            if r.status_code == 200 and r.json()['id'] != '':
+                return r.json()['id']
+            else:
+                print(f'Error {r.status_code}')
+        else:
+                print(f'The input "{indicator}" is not valid.')
+           
