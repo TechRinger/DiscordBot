@@ -152,7 +152,7 @@ def run_discord_bot():
             await interaction.response.defer()
             response = openai.ChatCompletion.create(model='gpt-3.5-turbo', messages=[
                 {'role': 'system', 'content': 'you are a helpful assistant'},
-                {'role': 'user', 'content': f'Provide any information on the cyber threat {message}.  Use the website https://https://unit42.paloaltonetworks.com whenever possible and return relient links' }]
+                {'role': 'user', 'content': f'Provide any information on the cyber threat {message}.  Use the website https://unit42.paloaltonetworks.com whenever possible and return relient links' }]
             )
             print(response)
             embed = discord.Embed(title='Response', url='', description=f'{response["choices"][0]["message"]["content"]}', color=discord.Color.blue())
