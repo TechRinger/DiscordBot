@@ -129,42 +129,7 @@ class XSOARClient:
         indicator_type = verify_input(indicator)
 
         if indicator_type:
-            #body = {
-            # "indicator": {
-            #     "CustomFields": {
-            #         "tags": [
-            #             "DiscordBot"
-            #         ],
-            #         "Username": "CelticChaos#5944"
-            #     },
-            #     "value": "asdf.fdadsf.com",
-            #     "indicator_type": "Domain",
-            #     "score": 3,
-            #     "comments": [
-            #         {
-            #             "content": "test comment"
-            #         }
-            #     ]
-            # }
-            # }
-            body2 = {
-            "indicator": {
-                "CustomFields": {
-                    "tags": [
-                        "DiscordBot"
-                    ],
-                    "Username": f"{user}"
-                },
-                "value": f"{indicator}",
-                "indicator_type": f"{indicator_type}",
-                "score": 3,
-                "comments": [
-                    {
-                        "content": "test comment"
-                    }
-                ]
-            }
-            }
+            
             body =  { 
               'indicator': {
                 'CustomFields': {
@@ -175,7 +140,7 @@ class XSOARClient:
                 },
                 'value': f'{indicator}',
                 'indicator_type': f'{indicator_type}',
-                'score': 3,
+                'score': severity,
                 'comments': [
                     {
                         'content': f'Created by DiscordBot for {user}'

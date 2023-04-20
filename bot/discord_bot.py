@@ -14,9 +14,9 @@ DISCORD_GUILD = os.getenv ('DISCORD_GUILD')
 SOAR_URL = os.getenv('SOAR_URL')
 SOAR_API_KEY = os.getenv('SOAR_API_KEY') 
 openai.api_key = os.getenv('OPENAI_API_KEY')
-SOAR_TYPE = os.getenv('SOAR_TYPE').lower()
 
-xsoar_client = XSOARClient(url=SOAR_URL, api_key=SOAR_API_KEY, bot_type='Discord')
+
+xsoar_client = XSOARClient(url=SOAR_URL, api_key=SOAR_API_KEY, bot_type='DiscordBot')
 
 
 class ModalEmail(Modal, title="Enter email",):
@@ -60,7 +60,7 @@ class DropdownView(View):
             discord.SelectOption(label='Hacking Challenge', description='Spin up a vulnerable container for a challenge'),
         ])
     async def select_callback(self, interaction, select):
-        if select.values[0] == 'Vul-Lab':
+        if select.values[0] == 'Vulnerability Lab Setup':
             select.disabled = True
             m = ModalEmail()
             m.user = str(interaction.user)
@@ -189,7 +189,5 @@ def run_discord_bot():
                 await send_message(message, user_message, is_private=True)
             else:
                 await send_message(message, user_message, is_private=False)
-
-        
 
     client.run(DISCORD_BOT_TOKEN)
